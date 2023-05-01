@@ -1,0 +1,2 @@
+python-binance==1.0.17
+pyInstaller==5.10.1
