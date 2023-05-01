@@ -14,6 +14,7 @@ symbols = list(filter(
     lambda x: x["quoteAsset"] == "USDT" and x["marginAsset"] == "USDT" and x["status"] == "TRADING", symbols
 ))
 symbols = list(map(lambda x: x["baseAsset"], symbols))
+symbols = sorted(list(set(symbols)))
 print(f"Доступных символов на бирже: {len(symbols)}")
 
 api_load_adjustment = 1.2
@@ -45,5 +46,9 @@ for progress, symbol in enumerate(symbols):
     sleep(time_to_sleep)
 
 white_list = sorted(list(set(white_list)))
+black_list = sorted(list(set(symbols) - set(white_list)))
 print(f"White list, всего {len(white_list)} монет с объемом {min_depth_k}k в {persent}%:")
 print(",".join(white_list))
+print(f"Black list, всего {len(black_list)} монет с объемом {min_depth_k}k в {persent}%:")
+print(",".join(black_list))
+input("Press enter to exit...")
