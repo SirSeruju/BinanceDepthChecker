@@ -2,7 +2,8 @@ from binance.client import Client
 from time import sleep
 
 persent = int(input("Введите процент[Пример - 1.2]: "))
-min_depth_k = int(input("Введите объем в тысячах[Пример - 500]: "))
+min_depth_asks = int(input("Введите объем в тысячах для верхнего(↑) стакана[Пример - 500]: "))
+min_depth_bids = int(input("Введите объем в тысячах для нижнего(↓) стакана[Пример - 500]: "))
 
 client = Client()
 info = client.futures_exchange_info()
@@ -24,6 +25,8 @@ print(f"Примерно займет времени: {str(all_time)}m")
 
 
 white_list = []
+white_list_asks = []
+white_list_bids = []
 for progress, symbol in enumerate(symbols):
     depth = client.futures_order_book(symbol=symbol + "USDT", limit=1000)
     # asks - верхний стакан, bids - нижний
@@ -40,15 +43,40 @@ for progress, symbol in enumerate(symbols):
     asks_k = asks_qty * asks_min / 1000
     bids_k = bids_qty * bids_max / 1000
 
-    if asks_k >= min_depth_k and bids_k >= min_depth_k:
+    if asks_k >= min_depth_asks and bids_k >= min_depth_bids:
         white_list.append(symbol)
-    print(f"Прогресс: {progress + 1}/{len(symbols)}; {symbol} В:{asks_k} | Н:{bids_k}")
+    if asks_k >= min_depth_asks:
+        white_list_asks.append(symbol)
+    if bids_k >= min_depth_bids:
+        white_list_bids.append(symbol)
+    print(f"Прогресс: {progress + 1}/{len(symbols)}; {symbol} ↑:{asks_k} | ↓:{bids_k}")
     sleep(time_to_sleep)
 
 white_list = sorted(list(set(white_list)))
 black_list = sorted(list(set(symbols) - set(white_list)))
-print(f"White list, всего {len(white_list)} монет с объемом {min_depth_k}k в {persent}%:")
-print(",".join(white_list))
-print(f"Black list, всего {len(black_list)} монет с объемом {min_depth_k}k в {persent}%:")
-print(",".join(black_list))
-input("Press enter to exit...")
+print()
+print(f"Для обоих стаканов:")
+print(f"White list, всего {len(white_list)} монет с объемом ↑{min_depth_asks}k и ↓{min_depth_bids}k в {persent}%:")
+print("\t", ",".join(white_list), sep="")
+print(f"Black list, всего {len(black_list)} монет с объемом ↑{min_depth_asks}k и ↓{min_depth_bids}k в {persent}%:")
+print("\t", ",".join(black_list), sep="")
+
+white_list = sorted(list(set(white_list_asks)))
+black_list = sorted(list(set(symbols) - set(white_list_asks)))
+print()
+print(f"Для верхнего стакана стакана:")
+print(f"White list, всего {len(white_list)} монет с объемом ↑{min_depth_asks}k в {persent}%:")
+print("\t", ",".join(white_list), sep="")
+print(f"Black list, всего {len(black_list)} монет с объемом ↑{min_depth_asks}k в {persent}%:")
+print("\t", ",".join(black_list), sep="")
+
+white_list = sorted(list(set(white_list_bids)))
+black_list = sorted(list(set(symbols) - set(white_list_bids)))
+print()
+print(f"Для нижнего стакана стакана:")
+print(f"White list, всего {len(white_list)} монет с объемом ↓{min_depth_bids}k в {persent}%:")
+print("\t", ",".join(white_list), sep="")
+print(f"Black list, всего {len(black_list)} монет с объемом ↓{min_depth_bids}k в {persent}%:")
+print("\t", ",".join(black_list), sep="")
+
+input("Нажмите для выхода...")
